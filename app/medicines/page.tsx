@@ -7,7 +7,7 @@ import { Medicine, MedicineCreate } from '@/types';
 import { formatCurrency } from '@/lib/utils';
 import { PageLoader, EmptyState, ErrorBanner, SearchInput, ConfirmDialog, Modal, Field, Spinner } from '@/components/ui';
 
-const EMPTY: MedicineCreate = { name: '', unit_price: 0, stock_quantity: 0 };
+const EMPTY: MedicineCreate = { medicine_name: '', unit_price: 0, stock_quantity: 0 };
 
 export default function MedicinesPage() {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
@@ -39,11 +39,11 @@ export default function MedicinesPage() {
 
   const filtered = medicines.filter(m => {
     const q = search.toLowerCase();
-    return m.name.toLowerCase().includes(q) || m.manufacturer?.toLowerCase().includes(q);
+    return m.medicine_name.toLowerCase().includes(q) || m.manufacturer?.toLowerCase().includes(q);
   });
 
   const handleSave = async () => {
-    if (!form.name) return;
+    if (!form.medicine_name) return;
     setSaving(true);
     try {
       if (editing) {
@@ -55,6 +55,18 @@ export default function MedicinesPage() {
       load();
     } catch (e: any) { setError(e.message); }
     finally { setSaving(false); }
+  };
+
+  const [deleting, setDeleting] = useState(false);
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await medicinesApi.delete(deleteTarget.medicine_id);
+      setDeleteTarget(null);
+      load();
+    } catch (e: any) { setError(e.message); }
+    finally { setDeleting(false); }
   };
 
   if (loading) return <PageLoader />;
@@ -101,7 +113,7 @@ export default function MedicinesPage() {
               {filtered.map(m => (
                 <tr key={m.medicine_id} className="hover:bg-slate-50/60">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-slate-800">{m.name}</p>
+                    <p className="font-medium text-slate-800">{m.medicine_name}</p>
                     {m.description && <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{m.description}</p>}
                   </td>
                   <td className="px-4 py-3 text-slate-500">{m.manufacturer ?? '—'}</td>
@@ -130,20 +142,16 @@ export default function MedicinesPage() {
         )}
       </div>
 
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit Medicine' : 'Add Medicine'} size="md">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="col-span-2">
-            <Field label="Medicine Name" required>
-              <input className="input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-            </Field>
-          </div>
-          <div className="col-span-2">
-            <Field label="Description">
-              <textarea className="input resize-none min-h-[60px]" value={form.description ?? ''} onChange={e => setForm(f => ({ ...f, description: e.target.value || undefined }))} />
-            </Field>
-          </div>
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit Medicine' : 'Add Medicine'} size="lg">
+        <div className="grid grid-cols-3 gap-3">
+          <Field label="Medicine Name" required>
+            <input className="input" value={form.medicine_name} onChange={e => setForm(f => ({ ...f, medicine_name: e.target.value }))} />
+          </Field>
           <Field label="Manufacturer">
             <input className="input" value={form.manufacturer ?? ''} onChange={e => setForm(f => ({ ...f, manufacturer: e.target.value || undefined }))} />
+          </Field>
+          <Field label="Description">
+            <input className="input" value={form.description ?? ''} onChange={e => setForm(f => ({ ...f, description: e.target.value || undefined }))} placeholder="Brief description…" />
           </Field>
           <Field label="Unit Price ($)" required>
             <input type="number" step="0.01" min="0" className="input" value={form.unit_price} onChange={e => setForm(f => ({ ...f, unit_price: +e.target.value }))} />
@@ -152,7 +160,7 @@ export default function MedicinesPage() {
             <input type="number" min="0" className="input" value={form.stock_quantity} onChange={e => setForm(f => ({ ...f, stock_quantity: +e.target.value }))} />
           </Field>
         </div>
-        <div className="flex justify-end gap-2 mt-6">
+        <div className="flex justify-end gap-2 mt-4">
           <button className="btn-secondary" onClick={() => setModalOpen(false)}>Cancel</button>
           <button className="btn-primary" onClick={handleSave} disabled={saving}>
             {saving && <Spinner size="sm" />}{editing ? 'Save Changes' : 'Add Medicine'}
@@ -161,8 +169,8 @@ export default function MedicinesPage() {
       </Modal>
 
       <ConfirmDialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)}
-        onConfirm={async () => { setDeleteTarget(null); load(); }}
-        title="Delete Medicine" message={`Delete ${deleteTarget?.name}?`} />
+        onConfirm={handleDelete} loading={deleting}
+        title="Delete Medicine" message={`Delete ${deleteTarget?.medicine_name}?`} />
     </div>
   );
 }

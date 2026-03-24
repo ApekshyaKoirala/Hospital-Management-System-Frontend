@@ -65,9 +65,9 @@ export default function AppointmentModal({ open, onClose, appointment, onSaved }
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={appointment ? 'Edit Appointment' : 'Book Appointment'} size="md">
-      {error && <div className="mb-4"><ErrorBanner message={error} /></div>}
-      <div className="grid grid-cols-2 gap-4">
+    <Modal open={open} onClose={onClose} title={appointment ? 'Edit Appointment' : 'Book Appointment'} size="lg">
+      {error && <div className="mb-3"><ErrorBanner message={error} /></div>}
+      <div className="grid grid-cols-3 gap-3">
         <Field label="Patient" required>
           <select className="input" value={form.patient_id} onChange={e => set('patient_id', +e.target.value)}>
             <option value={0}>— Select patient —</option>
@@ -91,13 +91,13 @@ export default function AppointmentModal({ open, onClose, appointment, onSaved }
             <input className="input" value={form.reason ?? ''} onChange={e => set('reason', e.target.value || undefined)} placeholder="e.g. Regular checkup" />
           </Field>
         </div>
-        <div className="col-span-2">
+        <div className="col-span-3">
           <Field label="Notes">
-            <textarea className="input min-h-[80px] resize-none" value={form.notes ?? ''} onChange={e => set('notes', e.target.value || undefined)} />
+            <textarea className="input min-h-[60px] resize-none" value={form.notes ?? ''} onChange={e => set('notes', e.target.value || undefined)} />
           </Field>
         </div>
       </div>
-      <div className="flex justify-end gap-2 mt-6">
+      <div className="flex justify-end gap-2 mt-4">
         <button className="btn-secondary" onClick={onClose}>Cancel</button>
         <button className="btn-primary" onClick={handleSubmit} disabled={loading}>
           {loading && <Spinner size="sm" />}

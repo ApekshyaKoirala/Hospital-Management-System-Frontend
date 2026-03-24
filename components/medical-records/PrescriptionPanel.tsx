@@ -12,7 +12,7 @@ export default function PrescriptionPanel({ recordId }: { recordId: number }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [addOpen, setAddOpen] = useState(false);
-  const [form, setForm] = useState({ medicine_id: 0, dosage: '', frequency: '', duration_days: 7, notes: '' });
+  const [form, setForm] = useState({ medicine_id: 0, dosage: '', frequency: '', duration: '7 days', notes: '' });
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
@@ -35,7 +35,7 @@ export default function PrescriptionPanel({ recordId }: { recordId: number }) {
     try {
       await medicinesApi.prescribe({ ...form, record_id: recordId });
       setAddOpen(false);
-      setForm({ medicine_id: 0, dosage: '', frequency: '', duration_days: 7, notes: '' });
+      setForm({ medicine_id: 0, dosage: '', frequency: '', duration: '7 days', notes: '' });
       load();
     } catch (e: any) { setError(e.message); }
     finally { setSaving(false); }
@@ -60,8 +60,8 @@ export default function PrescriptionPanel({ recordId }: { recordId: number }) {
             <div key={p.prescription_id} className="flex items-center gap-3 bg-white border border-slate-100 rounded-lg px-3 py-2.5">
               <Pill className="w-4 h-4 text-brand-400 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-slate-800">{p.medicine?.name ?? `Medicine #${p.medicine_id}`}</p>
-                <p className="text-xs text-slate-500">{p.dosage} · {p.frequency} · {p.duration_days} days</p>
+                <p className="text-xs font-semibold text-slate-800">{p.medicine?.medicine_name ?? `Medicine #${p.medicine_id}`}</p>
+                <p className="text-xs text-slate-500">{p.dosage} · {p.frequency} · {p.duration}</p>
               </div>
               {p.notes && <p className="text-xs text-slate-400 truncate max-w-[120px]">{p.notes}</p>}
             </div>
@@ -69,12 +69,12 @@ export default function PrescriptionPanel({ recordId }: { recordId: number }) {
         </div>
       )}
 
-      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add Prescription" size="sm">
+      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add Prescription" size="lg">
         <div className="space-y-3">
           <Field label="Medicine" required>
             <select className="input" value={form.medicine_id} onChange={e => setForm(f => ({ ...f, medicine_id: +e.target.value }))}>
               <option value={0}>— Select medicine —</option>
-              {medicines.map(m => <option key={m.medicine_id} value={m.medicine_id}>{m.name}</option>)}
+              {medicines.map(m => <option key={m.medicine_id} value={m.medicine_id}>{m.medicine_name}</option>)}
             </select>
           </Field>
           <Field label="Dosage" required>
@@ -83,8 +83,8 @@ export default function PrescriptionPanel({ recordId }: { recordId: number }) {
           <Field label="Frequency" required>
             <input className="input" value={form.frequency} placeholder="e.g. Twice daily" onChange={e => setForm(f => ({ ...f, frequency: e.target.value }))} />
           </Field>
-          <Field label="Duration (days)">
-            <input type="number" className="input" value={form.duration_days} min={1} onChange={e => setForm(f => ({ ...f, duration_days: +e.target.value }))} />
+          <Field label="Duration" required>
+            <input className="input" value={form.duration} placeholder="e.g. 7 days" onChange={e => setForm(f => ({ ...f, duration: e.target.value }))} />
           </Field>
           <Field label="Notes">
             <input className="input" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />

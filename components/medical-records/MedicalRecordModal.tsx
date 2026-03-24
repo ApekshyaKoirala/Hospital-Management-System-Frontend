@@ -7,7 +7,7 @@ import { MedicalRecord, MedicalRecordCreate, Patient, Doctor } from '@/types';
 
 const EMPTY: MedicalRecordCreate = {
   patient_id: 0, doctor_id: 0,
-  visit_date: new Date().toISOString().split('T')[0],
+  record_date: new Date().toISOString().split('T')[0],
   diagnosis: '',
 };
 
@@ -27,7 +27,7 @@ export default function MedicalRecordModal({ open, onClose, record, onSaved }: {
 
   useEffect(() => {
     if (record) {
-      setForm({ patient_id: record.patient_id, doctor_id: record.doctor_id, visit_date: record.visit_date, diagnosis: record.diagnosis, treatment: record.treatment, notes: record.notes });
+      setForm({ patient_id: record.patient_id, doctor_id: record.doctor_id, record_date: record.record_date, diagnosis: record.diagnosis, treatment: record.treatment, notes: record.notes });
     } else {
       setForm(EMPTY);
     }
@@ -59,8 +59,8 @@ export default function MedicalRecordModal({ open, onClose, record, onSaved }: {
 
   return (
     <Modal open={open} onClose={onClose} title={record ? 'Edit Medical Record' : 'New Medical Record'} size="lg">
-      {error && <div className="mb-4"><ErrorBanner message={error} /></div>}
-      <div className="grid grid-cols-2 gap-4">
+      {error && <div className="mb-3"><ErrorBanner message={error} /></div>}
+      <div className="grid grid-cols-3 gap-3">
         <Field label="Patient" required>
           <select className="input" value={form.patient_id} onChange={e => set('patient_id', +e.target.value)}>
             <option value={0}>— Select patient —</option>
@@ -73,26 +73,20 @@ export default function MedicalRecordModal({ open, onClose, record, onSaved }: {
             {doctors.map(d => <option key={d.doctor_id} value={d.doctor_id}>Dr. {d.first_name} {d.last_name}</option>)}
           </select>
         </Field>
-        <Field label="Visit Date" required>
-          <input type="date" className="input" value={form.visit_date} onChange={e => set('visit_date', e.target.value)} />
+        <Field label="Record Date" required>
+          <input type="date" className="input" value={form.record_date} onChange={e => set('record_date', e.target.value)} />
         </Field>
-        <div className="col-span-2">
-          <Field label="Diagnosis" required>
-            <input className="input" value={form.diagnosis} onChange={e => set('diagnosis', e.target.value)} placeholder="e.g. Hypertension, Type 2 Diabetes…" />
-          </Field>
-        </div>
-        <div className="col-span-2">
-          <Field label="Treatment">
-            <textarea className="input min-h-[80px] resize-none" value={form.treatment ?? ''} onChange={e => set('treatment', e.target.value || undefined)} placeholder="Prescribed treatment plan…" />
-          </Field>
-        </div>
-        <div className="col-span-2">
-          <Field label="Notes">
-            <textarea className="input min-h-[60px] resize-none" value={form.notes ?? ''} onChange={e => set('notes', e.target.value || undefined)} />
-          </Field>
-        </div>
+        <Field label="Diagnosis" required>
+          <input className="input" value={form.diagnosis} onChange={e => set('diagnosis', e.target.value)} placeholder="e.g. Hypertension" />
+        </Field>
+        <Field label="Treatment">
+          <input className="input" value={form.treatment ?? ''} onChange={e => set('treatment', e.target.value || undefined)} placeholder="Treatment plan…" />
+        </Field>
+        <Field label="Notes">
+          <input className="input" value={form.notes ?? ''} onChange={e => set('notes', e.target.value || undefined)} placeholder="Additional notes…" />
+        </Field>
       </div>
-      <div className="flex justify-end gap-2 mt-6">
+      <div className="flex justify-end gap-2 mt-4">
         <button className="btn-secondary" onClick={onClose}>Cancel</button>
         <button className="btn-primary" onClick={handleSubmit} disabled={loading}>
           {loading && <Spinner size="sm" />}

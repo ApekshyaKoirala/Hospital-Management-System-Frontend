@@ -23,7 +23,7 @@ export default function RoomsPage() {
   const [roomModal, setRoomModal] = useState(false);
   const [editRoom, setEditRoom] = useState<Room | null>(null);
   const [admitModal, setAdmitModal] = useState(false);
-  const [roomForm, setRoomForm] = useState<any>({ room_number: '', room_type: 'General', capacity: 1, daily_rate: 0, status: 'Available' });
+  const [roomForm, setRoomForm] = useState<any>({ room_number: '', room_type: 'General', capacity: 1, charge_per_day: 0, is_available: true });
   const [admitForm, setAdmitForm] = useState<AdmissionCreate>({ patient_id: 0, room_id: 0, doctor_id: 0, admission_date: new Date().toISOString().split('T')[0], diagnosis: '' });
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
@@ -48,7 +48,7 @@ export default function RoomsPage() {
       const { room_id, current_occupancy, ...rest } = editRoom as any;
       setRoomForm(rest);
     } else {
-      setRoomForm({ room_number: '', room_type: 'General', capacity: 1, daily_rate: 0, status: 'Available' });
+      setRoomForm({ room_number: '', room_type: 'General', capacity: 1, charge_per_day: 0, is_available: true });
     }
   }, [editRoom, roomModal]);
 
@@ -109,7 +109,7 @@ export default function RoomsPage() {
         <div>
           <h1 className="page-title">Rooms & Admissions</h1>
           <p className="text-sm text-slate-500 mt-0.5">
-            {rooms.filter(r => r.status === 'Available').length} rooms available · {admissions.filter(a => a.status === 'Active').length} active admissions
+            {rooms.filter(r => r.is_available).length} rooms available · {admissions.filter(a => a.status === 'Active').length} active admissions
           </p>
         </div>
         <div className="flex gap-2">
@@ -146,7 +146,7 @@ export default function RoomsPage() {
                     <p className="text-lg font-bold text-slate-900">{r.room_number}</p>
                     <span className={`badge text-xs ${TYPE_COLORS[r.room_type]}`}>{r.room_type}</span>
                   </div>
-                  <StatusBadge status={r.status} />
+                  <StatusBadge status={r.is_available ? 'Available' : 'Occupied'} />
                 </div>
                 <button onClick={() => { setEditRoom(r); setRoomModal(true); }}
                   className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100">
@@ -156,9 +156,9 @@ export default function RoomsPage() {
               <div className="grid grid-cols-3 gap-2 text-xs">
                 <div><p className="text-slate-400">Capacity</p><p className="font-semibold text-slate-700 mt-0.5">{r.capacity}</p></div>
                 <div><p className="text-slate-400">Occupied</p><p className="font-semibold text-slate-700 mt-0.5">{r.current_occupancy}</p></div>
-                <div><p className="text-slate-400">Daily Rate</p><p className="font-semibold text-slate-700 mt-0.5">{formatCurrency(r.daily_rate)}</p></div>
+                <div><p className="text-slate-400">Daily Rate</p><p className="font-semibold text-slate-700 mt-0.5">{formatCurrency(r.charge_per_day)}</p></div>
               </div>
-              {r.status === 'Available' && (
+              {r.is_available && (
                 <button className="btn-primary w-full mt-3 text-xs justify-center py-1.5"
                   onClick={() => { setAdmitForm(f => ({ ...f, room_id: r.room_id })); setAdmitModal(true); }}>
                   Admit Patient
@@ -200,8 +200,8 @@ export default function RoomsPage() {
       )}
 
       {/* Room Modal */}
-      <Modal open={roomModal} onClose={() => setRoomModal(false)} title={editRoom ? 'Edit Room' : 'Add Room'} size="sm">
-        <div className="space-y-3">
+      <Modal open={roomModal} onClose={() => setRoomModal(false)} title={editRoom ? 'Edit Room' : 'Add Room'} size="lg">
+        <div className="grid grid-cols-3 gap-3">
           <Field label="Room Number" required>
             <input className="input" value={roomForm.room_number} onChange={e => setRoomForm((f: any) => ({ ...f, room_number: e.target.value }))} />
           </Field>
@@ -210,29 +210,28 @@ export default function RoomsPage() {
               {ROOM_TYPES.map(t => <option key={t}>{t}</option>)}
             </select>
           </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Capacity">
-              <input type="number" min="1" className="input" value={roomForm.capacity} onChange={e => setRoomForm((f: any) => ({ ...f, capacity: +e.target.value }))} />
-            </Field>
-            <Field label="Daily Rate ($)">
-              <input type="number" min="0" step="0.01" className="input" value={roomForm.daily_rate} onChange={e => setRoomForm((f: any) => ({ ...f, daily_rate: +e.target.value }))} />
-            </Field>
-          </div>
-          <Field label="Status">
-            <select className="input" value={roomForm.status} onChange={e => setRoomForm((f: any) => ({ ...f, status: e.target.value }))}>
-              {ROOM_STATUSES.map(s => <option key={s}>{s}</option>)}
+          <Field label="Capacity">
+            <input type="number" min="1" className="input" value={roomForm.capacity} onChange={e => setRoomForm((f: any) => ({ ...f, capacity: +e.target.value }))} />
+          </Field>
+          <Field label="Daily Rate ($)">
+            <input type="number" min="0" step="0.01" className="input" value={roomForm.charge_per_day} onChange={e => setRoomForm((f: any) => ({ ...f, charge_per_day: +e.target.value }))} />
+          </Field>
+          <Field label="Available">
+            <select className="input" value={roomForm.is_available ? 'true' : 'false'} onChange={e => setRoomForm((f: any) => ({ ...f, is_available: e.target.value === 'true' }))}>
+              <option value="true">Yes</option>
+              <option value="false">No</option>
             </select>
           </Field>
         </div>
-        <div className="flex justify-end gap-2 mt-5">
+        <div className="flex justify-end gap-2 mt-4">
           <button className="btn-secondary" onClick={() => setRoomModal(false)}>Cancel</button>
           <button className="btn-primary" onClick={saveRoom} disabled={saving}>{saving && <Spinner size="sm" />}{editRoom ? 'Save' : 'Add Room'}</button>
         </div>
       </Modal>
 
       {/* Admit Modal */}
-      <Modal open={admitModal} onClose={() => setAdmitModal(false)} title="Admit Patient" size="md">
-        <div className="grid grid-cols-2 gap-4">
+      <Modal open={admitModal} onClose={() => setAdmitModal(false)} title="Admit Patient" size="lg">
+        <div className="grid grid-cols-3 gap-3">
           <Field label="Patient" required>
             <select className="input" value={admitForm.patient_id} onChange={e => setAdmitForm(f => ({ ...f, patient_id: +e.target.value }))}>
               <option value={0}>— Select —</option>
@@ -242,7 +241,7 @@ export default function RoomsPage() {
           <Field label="Room" required>
             <select className="input" value={admitForm.room_id} onChange={e => setAdmitForm(f => ({ ...f, room_id: +e.target.value }))}>
               <option value={0}>— Select —</option>
-              {rooms.filter(r => r.status === 'Available').map(r => <option key={r.room_id} value={r.room_id}>{r.room_number} ({r.room_type})</option>)}
+              {rooms.filter(r => r.is_available).map(r => <option key={r.room_id} value={r.room_id}>{r.room_number} ({r.room_type})</option>)}
             </select>
           </Field>
           <Field label="Doctor" required>
@@ -260,7 +259,7 @@ export default function RoomsPage() {
             </Field>
           </div>
         </div>
-        <div className="flex justify-end gap-2 mt-6">
+        <div className="flex justify-end gap-2 mt-4">
           <button className="btn-secondary" onClick={() => setAdmitModal(false)}>Cancel</button>
           <button className="btn-primary" onClick={admitPatient} disabled={saving}>{saving && <Spinner size="sm" />}Admit Patient</button>
         </div>

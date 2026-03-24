@@ -7,7 +7,6 @@ import { MedicalRecord } from '@/types';
 import { formatDate } from '@/lib/utils';
 import { PageLoader, EmptyState, ErrorBanner, SearchInput, ConfirmDialog } from '@/components/ui';
 import MedicalRecordModal from '@/components/medical-records/MedicalRecordModal';
-import PrescriptionPanel from '@/components/medical-records/PrescriptionPanel';
 
 export default function MedicalRecordsPage() {
   const [records, setRecords] = useState<MedicalRecord[]>([]);
@@ -91,19 +90,16 @@ export default function MedicalRecordsPage() {
                             {' · '}
                             {rec.doctor ? `Dr. ${rec.doctor.first_name} ${rec.doctor.last_name}` : `Doctor #${r.doctor_id}`}
                             {' · '}
-                            {formatDate(r.visit_date)}
+                            {formatDate(r.record_date)}
                           </p>
-                          {r.treatment && (
-                            <p className="text-xs text-slate-500 mt-1.5 line-clamp-1">
-                              <span className="font-medium text-slate-600">Treatment:</span> {r.treatment}
-                            </p>
-                          )}
                         </div>
                         <div className="flex items-center gap-1 flex-shrink-0">
-                          <button onClick={() => setExpanded(isOpen ? null : r.record_id)}
-                            className="flex items-center gap-1 px-2 py-1 text-xs text-brand-600 hover:bg-brand-50 rounded-lg transition-colors">
-                            Prescriptions {isOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                          </button>
+                          {r.treatment && (
+                            <button onClick={() => setExpanded(isOpen ? null : r.record_id)}
+                              className="flex items-center gap-1 px-2 py-1 text-xs text-brand-600 hover:bg-brand-50 rounded-lg transition-colors">
+                              Treatment Plan {isOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                            </button>
+                          )}
                           <button onClick={() => { setEditing(r); setModalOpen(true); }}
                             className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100">
                             <Pencil className="w-3.5 h-3.5" />
@@ -117,9 +113,10 @@ export default function MedicalRecordsPage() {
                       {r.notes && <p className="text-xs text-slate-400 mt-1 italic">"{r.notes}"</p>}
                     </div>
                   </div>
-                  {isOpen && (
-                    <div className="bg-slate-50 border-t border-slate-100">
-                      <PrescriptionPanel recordId={r.record_id} />
+                  {isOpen && r.treatment && (
+                    <div className="bg-slate-50 border-t border-slate-100 px-5 py-3 ml-[52px]">
+                      <p className="text-xs font-medium text-slate-600 mb-1">Treatment Plan</p>
+                      <p className="text-sm text-slate-700">{r.treatment}</p>
                     </div>
                   )}
                 </div>
@@ -131,7 +128,7 @@ export default function MedicalRecordsPage() {
 
       <MedicalRecordModal open={modalOpen} onClose={() => setModalOpen(false)} record={editing} onSaved={() => { setModalOpen(false); load(); }} />
       <ConfirmDialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} loading={deleting}
-        title="Delete Record" message="Delete this medical record and all its prescriptions?" />
+        title="Delete Record" message="Delete this medical record?" />
     </div>
   );
 }

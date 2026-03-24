@@ -7,7 +7,7 @@ import { Bill, BillCreate, BillStatus, PaymentCreate, PaymentMethod, Patient } f
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { PageLoader, ErrorBanner, StatusBadge, SearchInput, Modal, Field, Spinner, StatCard } from '@/components/ui';
 
-const STATUSES: BillStatus[] = ['Pending', 'Paid', 'Partial', 'Cancelled'];
+const STATUSES: BillStatus[] = ['Pending', 'Paid', 'Partially Paid', 'Cancelled'];
 const PAY_METHODS: PaymentMethod[] = ['Cash', 'Card', 'Insurance', 'Online'];
 
 export default function BillingPage() {
@@ -38,7 +38,7 @@ export default function BillingPage() {
     const q = search.toLowerCase();
     const p = (b as any).patient;
     const matchSearch = !q || (p ? `${p.first_name} ${p.last_name}`.toLowerCase().includes(q) : `${b.patient_id}`.includes(q));
-    const matchStatus = !statusFilter || b.status === statusFilter;
+    const matchStatus = !statusFilter || b.payment_status === statusFilter;
     return matchSearch && matchStatus;
   });
 
@@ -67,7 +67,7 @@ export default function BillingPage() {
 
   if (loading) return <PageLoader />;
 
-  const totalPending = bills.filter(b => b.status === 'Pending').reduce((s, b) => s + b.total_amount, 0);
+  const totalPending = bills.filter(b => b.payment_status === 'Pending').reduce((s, b) => s + b.total_amount, 0);
   const totalCollected = bills.reduce((s, b) => s + b.paid_amount, 0);
   const totalOutstanding = bills.reduce((s, b) => s + (b.total_amount - b.paid_amount), 0);
 
@@ -128,10 +128,10 @@ export default function BillingPage() {
                   <td className="px-4 py-3">
                     <span className={balance > 0 ? 'text-red-500 font-medium' : 'text-slate-400'}>{formatCurrency(balance)}</span>
                   </td>
-                  <td className="px-4 py-3 text-slate-500 text-xs">{formatDate(b.due_date)}</td>
-                  <td className="px-4 py-3"><StatusBadge status={b.status} /></td>
+                  <td className="px-4 py-3 text-slate-500 text-xs">{formatDate(b.bill_date)}</td>
+                  <td className="px-4 py-3"><StatusBadge status={b.payment_status} /></td>
                   <td className="px-4 py-3">
-                    {b.status !== 'Paid' && b.status !== 'Cancelled' && (
+                    {b.payment_status !== 'Paid' && b.payment_status !== 'Cancelled' && (
                       <button className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700 font-medium px-2 py-1 rounded-lg hover:bg-brand-50"
                         onClick={() => { setPayForm({ amount: balance, payment_method: 'Cash' }); setPayModal(b); }}>
                         <CreditCard className="w-3 h-3" /> Pay
@@ -149,8 +149,8 @@ export default function BillingPage() {
       </div>
 
       {/* Create Bill Modal */}
-      <Modal open={billModal} onClose={() => setBillModal(false)} title="Create Bill" size="sm">
-        <div className="space-y-3">
+      <Modal open={billModal} onClose={() => setBillModal(false)} title="Create Bill" size="lg">
+        <div className="grid grid-cols-3 gap-3">
           <Field label="Patient" required>
             <select className="input" value={billForm.patient_id} onChange={e => setBillForm(f => ({ ...f, patient_id: +e.target.value }))}>
               <option value={0}>— Select patient —</option>
@@ -161,18 +161,18 @@ export default function BillingPage() {
             <input type="number" min="0" step="0.01" className="input" value={billForm.total_amount}
               onChange={e => setBillForm(f => ({ ...f, total_amount: +e.target.value }))} />
           </Field>
-          <Field label="Due Date">
-            <input type="date" className="input" value={billForm.due_date ?? ''} onChange={e => setBillForm(f => ({ ...f, due_date: e.target.value || undefined }))} />
+          <Field label="Bill Date">
+            <input type="date" className="input" value={billForm.bill_date ?? ''} onChange={e => setBillForm((f: any) => ({ ...f, bill_date: e.target.value || undefined }))} />
           </Field>
         </div>
-        <div className="flex justify-end gap-2 mt-5">
+        <div className="flex justify-end gap-2 mt-4">
           <button className="btn-secondary" onClick={() => setBillModal(false)}>Cancel</button>
           <button className="btn-primary" onClick={createBill} disabled={saving}>{saving && <Spinner size="sm" />}Create Bill</button>
         </div>
       </Modal>
 
       {/* Payment Modal */}
-      <Modal open={!!payModal} onClose={() => setPayModal(null)} title="Record Payment" size="sm">
+      <Modal open={!!payModal} onClose={() => setPayModal(null)} title="Record Payment" size="md">
         {payModal && (
           <>
             <div className="bg-slate-50 rounded-lg p-3 mb-4 text-sm">

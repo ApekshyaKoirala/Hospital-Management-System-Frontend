@@ -98,12 +98,12 @@ export default function DoctorsPage() {
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <p className="text-slate-400">License</p>
-                  <p className="text-slate-700 font-medium mt-0.5">{d.license_number}</p>
+                  <p className="text-slate-400">Specialization</p>
+                  <p className="text-slate-700 font-medium mt-0.5">{d.specialization}</p>
                 </div>
                 <div>
                   <p className="text-slate-400">Joined</p>
-                  <p className="text-slate-700 font-medium mt-0.5">{formatDate(d.created_at)}</p>
+                  <p className="text-slate-700 font-medium mt-0.5">{formatDate(d.joined_date)}</p>
                 </div>
                 {d.phone && <div>
                   <p className="text-slate-400">Phone</p>

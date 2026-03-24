@@ -81,11 +81,10 @@ export default function PatientDetailPage() {
               { label: 'Date of Birth', value: formatDate(patient.date_of_birth) },
               { label: 'Age', value: calcAge(patient.date_of_birth) },
               { label: 'Gender', value: patient.gender },
-              { label: 'Blood Type', value: patient.blood_type ?? '—' },
+              { label: 'Blood Type', value: patient.blood_group ?? '—' },
               { label: 'Phone', value: patient.phone ?? '—' },
               { label: 'Email', value: patient.email ?? '—' },
-              { label: 'Emergency Contact', value: patient.emergency_contact_name ?? '—' },
-              { label: 'Emergency Phone', value: patient.emergency_contact_phone ?? '—' },
+              { label: 'Emergency Contact', value: patient.emergency_contact ?? '—' },
             ].map(({ label, value }) => (
               <div key={label}>
                 <p className="text-xs text-slate-400 font-medium">{label}</p>
@@ -139,7 +138,7 @@ export default function PatientDetailPage() {
                   <div>
                     <p className="text-sm font-medium text-slate-800">{r.diagnosis}</p>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      {formatDate(r.visit_date)} · {r.doctor ? `Dr. ${r.doctor.first_name} ${r.doctor.last_name}` : `Doctor #${r.doctor_id}`}
+                      {formatDate(r.record_date)} · {r.doctor ? `Dr. ${r.doctor.first_name} ${r.doctor.last_name}` : `Doctor #${r.doctor_id}`}
                     </p>
                   </div>
                 </div>
@@ -169,7 +168,7 @@ export default function PatientDetailPage() {
                   <td className="px-4 py-2.5 font-medium">{formatCurrency(b.total_amount)}</td>
                   <td className="px-4 py-2.5 text-emerald-600">{formatCurrency(b.paid_amount)}</td>
                   <td className="px-4 py-2.5 text-red-500">{formatCurrency(b.total_amount - b.paid_amount)}</td>
-                  <td className="px-4 py-2.5"><StatusBadge status={b.status} /></td>
+                  <td className="px-4 py-2.5"><StatusBadge status={b.payment_status} /></td>
                 </tr>
               ))}
             </tbody>

@@ -5,11 +5,36 @@ import { Users, UserRound, CalendarDays, BedDouble, Receipt, TrendingUp } from '
 import { patientsApi, doctorsApi, appointmentsApi, billingApi } from '@/lib/api';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { StatCard, StatusBadge, PageLoader } from '@/components/ui';
+import PatientModal from '@/components/patients/PatientModal';
+import AppointmentModal from '@/components/appointments/AppointmentModal';
+import MedicalRecordModal from '@/components/medical-records/MedicalRecordModal';
+import AdmitPatientModal from '@/components/rooms/AdmitPatientModal';
+import CreateBillModal from '@/components/billing/CreateBillModal';
 import Link from 'next/link';
 
 export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Modal states
+  const [patientModal, setPatientModal] = useState(false);
+  const [apptModal, setApptModal] = useState(false);
+  const [recordModal, setRecordModal] = useState(false);
+  const [admitModal, setAdmitModal] = useState(false);
+  const [billModal, setBillModal] = useState(false);
+  
+  const reload = async () => {
+    // Only reload the relevant parts, or full reload
+    const [patients, doctors, appointments, bills, rooms, admissions] = await Promise.all([
+      patientsApi.list(0, 200),
+      doctorsApi.list(0, 200),
+      appointmentsApi.list(0, 200),
+      billingApi.listBills(0, 200),
+      billingApi.listRooms(0, 200),
+      billingApi.listAdmissions(0, 200),
+    ]);
+    setData({ patients, doctors, appointments, bills, rooms, admissions });
+  };
 
   useEffect(() => {
     Promise.allSettled([
@@ -37,11 +62,11 @@ export default function DashboardPage() {
   const { patients, doctors, appointments, bills, rooms, admissions } = data;
   const today = new Date().toISOString().split('T')[0];
   const todayAppts = appointments.filter((a: any) => a.appointment_date === today);
-  const pendingBills = bills.filter((b: any) => b.status === 'Pending');
-  const totalRevenue = bills.filter((b: any) => b.status === 'Paid').reduce((s: number, b: any) => s + b.total_amount, 0);
-  const availableRooms = rooms.filter((r: any) => r.status === 'Available').length;
+  const pendingBills = bills.filter((b: any) => b.payment_status === 'Pending');
+  const totalRevenue = bills.filter((b: any) => b.payment_status === 'Paid').reduce((s: number, b: any) => s + (Number(b.total_amount) || 0), 0);
+  const availableRooms = rooms.filter((r: any) => r.is_available).length;
   const recentAppointments = [...appointments].sort((a: any, b: any) =>
-    new Date(b.created_at ?? b.appointment_date).getTime() - new Date(a.created_at ?? a.appointment_date).getTime()
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   ).slice(0, 6);
   const activeAdmissions = admissions.filter((a: any) => a.status === 'Active').slice(0, 5);
 
@@ -116,19 +141,20 @@ export default function DashboardPage() {
       <div className="card px-5 py-4">
         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Quick Actions</p>
         <div className="flex flex-wrap gap-2">
-          {[
-            { label: '+ New Patient',      href: '/patients' },
-            { label: '+ Book Appointment', href: '/appointments' },
-            { label: '+ Admit Patient',    href: '/rooms' },
-            { label: '+ Create Bill',      href: '/billing' },
-            { label: '+ Medical Record',   href: '/medical-records' },
-          ].map(({ label, href }) => (
-            <Link key={href} href={href} className="btn-secondary text-xs py-1.5">
-              {label}
-            </Link>
-          ))}
+          <button className="btn-secondary text-xs py-1.5" onClick={() => setPatientModal(true)}>+ New Patient</button>
+          <button className="btn-secondary text-xs py-1.5" onClick={() => setApptModal(true)}>+ Book Appointment</button>
+          <button className="btn-secondary text-xs py-1.5" onClick={() => setRecordModal(true)}>+ Medical Record</button>
+          <button className="btn-secondary text-xs py-1.5" onClick={() => setAdmitModal(true)}>+ Admit Patient</button>
+          <button className="btn-secondary text-xs py-1.5" onClick={() => setBillModal(true)}>+ Create Bill</button>
         </div>
       </div>
+
+      {/* Modals */}
+      <PatientModal open={patientModal} onClose={() => setPatientModal(false)} patient={null} onSaved={() => { setPatientModal(false); reload(); }} />
+      <AppointmentModal open={apptModal} onClose={() => setApptModal(false)} appointment={null} onSaved={() => { setApptModal(false); reload(); }} />
+      <MedicalRecordModal open={recordModal} onClose={() => setRecordModal(false)} record={null} onSaved={() => { setRecordModal(false); reload(); }} />
+      <AdmitPatientModal open={admitModal} onClose={() => setAdmitModal(false)} onSaved={() => { setAdmitModal(false); reload(); }} />
+      <CreateBillModal open={billModal} onClose={() => setBillModal(false)} onSaved={() => { setBillModal(false); reload(); }} />
     </div>
   );
 }

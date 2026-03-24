@@ -8,13 +8,12 @@ export interface Patient {
   last_name: string;
   date_of_birth: string;
   gender: Gender;
-  blood_type?: BloodType;
-  phone?: string;
+  blood_group?: string;
+  phone: string;
   email?: string;
   address?: string;
-  emergency_contact_name?: string;
-  emergency_contact_phone?: string;
-  created_at: string;
+  emergency_contact?: string;
+  registration_date: string;
 }
 
 export interface PatientCreate {
@@ -22,12 +21,11 @@ export interface PatientCreate {
   last_name: string;
   date_of_birth: string;
   gender: Gender;
-  blood_type?: BloodType;
-  phone?: string;
+  blood_group?: string;
+  phone: string;
   email?: string;
   address?: string;
-  emergency_contact_name?: string;
-  emergency_contact_phone?: string;
+  emergency_contact?: string;
 }
 
 // ─── Doctor ─────────────────────────────────────────────────────────────────
@@ -36,20 +34,24 @@ export interface Doctor {
   first_name: string;
   last_name: string;
   specialization: string;
-  phone?: string;
-  email?: string;
-  license_number: string;
+  phone: string;
+  email: string;
+  consultation_fee: number;
+  experience_years?: number;
+  joined_date: string;
   is_available: boolean;
-  created_at: string;
 }
 
 export interface DoctorCreate {
   first_name: string;
   last_name: string;
   specialization: string;
-  phone?: string;
-  email?: string;
-  license_number: string;
+  qualification?: string;
+  phone: string;
+  email: string;
+  consultation_fee: number;
+  experience_years?: number;
+  joined_date: string;
   is_available?: boolean;
 }
 
@@ -84,7 +86,7 @@ export interface MedicalRecord {
   record_id: number;
   patient_id: number;
   doctor_id: number;
-  visit_date: string;
+  record_date: string;
   diagnosis: string;
   treatment?: string;
   notes?: string;
@@ -96,7 +98,7 @@ export interface MedicalRecord {
 export interface MedicalRecordCreate {
   patient_id: number;
   doctor_id: number;
-  visit_date: string;
+  record_date: string;
   diagnosis: string;
   treatment?: string;
   notes?: string;
@@ -105,7 +107,7 @@ export interface MedicalRecordCreate {
 // ─── Medicine & Prescription ─────────────────────────────────────────────────
 export interface Medicine {
   medicine_id: number;
-  name: string;
+  medicine_name: string;
   description?: string;
   manufacturer?: string;
   unit_price: number;
@@ -114,7 +116,7 @@ export interface Medicine {
 }
 
 export interface MedicineCreate {
-  name: string;
+  medicine_name: string;
   description?: string;
   manufacturer?: string;
   unit_price: number;
@@ -127,7 +129,7 @@ export interface Prescription {
   medicine_id: number;
   dosage: string;
   frequency: string;
-  duration_days: number;
+  duration: string;
   notes?: string;
   medicine?: Medicine;
   created_at: string;
@@ -138,7 +140,7 @@ export interface PrescriptionCreate {
   medicine_id: number;
   dosage: string;
   frequency: string;
-  duration_days: number;
+  duration: string;
   notes?: string;
 }
 
@@ -152,8 +154,8 @@ export interface Room {
   room_type: RoomType;
   capacity: number;
   current_occupancy: number;
-  daily_rate: number;
-  status: RoomStatus;
+  charge_per_day: number;
+  is_available: boolean;
 }
 
 export interface Admission {
@@ -180,7 +182,7 @@ export interface AdmissionCreate {
 }
 
 // ─── Billing ─────────────────────────────────────────────────────────────────
-export type BillStatus = 'Pending' | 'Paid' | 'Partial' | 'Cancelled';
+export type BillStatus = 'Pending' | 'Paid' | 'Partially Paid' | 'Cancelled';
 export type PaymentMethod = 'Cash' | 'Card' | 'Insurance' | 'Online';
 
 export interface Bill {
@@ -190,10 +192,10 @@ export interface Bill {
   appointment_id?: number;
   total_amount: number;
   paid_amount: number;
-  status: BillStatus;
-  due_date?: string;
+  payment_status: BillStatus;
+  payment_method?: PaymentMethod;
+  bill_date: string;
   patient?: Patient;
-  created_at: string;
 }
 
 export interface BillCreate {
@@ -201,7 +203,11 @@ export interface BillCreate {
   admission_id?: number;
   appointment_id?: number;
   total_amount: number;
-  due_date?: string;
+  bill_date?: string;
+  consultation_fee?: number;
+  medicine_charges?: number;
+  room_charges?: number;
+  other_charges?: number;
 }
 
 export interface Payment {

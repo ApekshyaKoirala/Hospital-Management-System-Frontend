@@ -14,7 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <div className="flex min-h-screen">
           <Sidebar />
-          <div className="flex-1 flex flex-col" style={{ marginLeft: '256px' }}>
+          <div className="flex-1 flex flex-col pl-64">
             <Topbar />
             <main className="flex-1 p-6">
               {children}

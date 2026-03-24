@@ -29,7 +29,7 @@ export function calcAge(dob?: string | null): string {
 }
 
 export function formatCurrency(amount?: number | null): string {
-  if (amount == null) return '—';
+  if (amount == null || isNaN(amount)) return '—';
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 }
 
@@ -46,6 +46,7 @@ export const STATUS_COLORS: Record<string, string> = {
   Discharged: 'bg-slate-50 text-slate-600 ring-slate-200',
   Pending: 'bg-amber-50 text-amber-700 ring-amber-200',
   Paid: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+  'Partially Paid': 'bg-orange-50 text-orange-700 ring-orange-200',
   Partial: 'bg-orange-50 text-orange-700 ring-orange-200',
   Available: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
   Occupied: 'bg-red-50 text-red-700 ring-red-200',

@@ -9,7 +9,7 @@ const GENDERS: Gender[] = ['Male', 'Female', 'Other'];
 const BLOOD_TYPES: BloodType[] = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
 const EMPTY: PatientCreate = {
-  first_name: '', last_name: '', date_of_birth: '', gender: 'Male',
+  first_name: '', last_name: '', date_of_birth: '', gender: 'Male', phone: '',
 };
 
 export default function PatientModal({ open, onClose, patient, onSaved }: {
@@ -24,7 +24,7 @@ export default function PatientModal({ open, onClose, patient, onSaved }: {
 
   useEffect(() => {
     if (patient) {
-      const { patient_id, created_at, ...rest } = patient as any;
+      const { patient_id, registration_date, ...rest } = patient as any;
       setForm(rest);
     } else {
       setForm(EMPTY);
@@ -57,8 +57,8 @@ export default function PatientModal({ open, onClose, patient, onSaved }: {
 
   return (
     <Modal open={open} onClose={onClose} title={patient ? 'Edit Patient' : 'Register Patient'} size="lg">
-      {error && <div className="mb-4"><ErrorBanner message={error} /></div>}
-      <div className="grid grid-cols-2 gap-4">
+      {error && <div className="mb-3"><ErrorBanner message={error} /></div>}
+      <div className="grid grid-cols-3 gap-3">
         <Field label="First Name" required>
           <input className="input" value={form.first_name} onChange={e => set('first_name', e.target.value)} />
         </Field>
@@ -73,10 +73,10 @@ export default function PatientModal({ open, onClose, patient, onSaved }: {
             {GENDERS.map(g => <option key={g}>{g}</option>)}
           </select>
         </Field>
-        <Field label="Blood Type">
-          <select className="input" value={form.blood_type ?? ''} onChange={e => set('blood_type', e.target.value || undefined)}>
+        <Field label="Blood Group">
+          <select className="input" value={form.blood_group ?? ''} onChange={e => set('blood_group', e.target.value || undefined)}>
             <option value="">— Select —</option>
-            {BLOOD_TYPES.map(b => <option key={b}>{b}</option>)}
+            {BLOOD_TYPES.map(b => <option key={b} value={b}>{b}</option>)}
           </select>
         </Field>
         <Field label="Phone">
@@ -88,14 +88,11 @@ export default function PatientModal({ open, onClose, patient, onSaved }: {
         <Field label="Address">
           <input className="input" value={form.address ?? ''} onChange={e => set('address', e.target.value || undefined)} />
         </Field>
-        <Field label="Emergency Contact Name">
-          <input className="input" value={form.emergency_contact_name ?? ''} onChange={e => set('emergency_contact_name', e.target.value || undefined)} />
-        </Field>
-        <Field label="Emergency Contact Phone">
-          <input className="input" value={form.emergency_contact_phone ?? ''} onChange={e => set('emergency_contact_phone', e.target.value || undefined)} />
+        <Field label="Emergency Contact">
+          <input className="input" value={form.emergency_contact ?? ''} onChange={e => set('emergency_contact', e.target.value || undefined)} placeholder="Name and/or Phone" />
         </Field>
       </div>
-      <div className="flex justify-end gap-2 mt-6">
+      <div className="flex justify-end gap-2 mt-4">
         <button className="btn-secondary" onClick={onClose}>Cancel</button>
         <button className="btn-primary" onClick={handleSubmit} disabled={loading}>
           {loading && <Spinner size="sm" />}

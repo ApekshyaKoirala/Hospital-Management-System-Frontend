@@ -129,8 +129,8 @@ export default function PatientsPage() {
                     <p className="text-xs text-slate-400">{formatDate(p.date_of_birth)}</p>
                   </td>
                   <td className="px-4 py-3">
-                    {p.blood_type ? (
-                      <span className="badge bg-red-50 text-red-700 ring-red-200">{p.blood_type}</span>
+                    {p.blood_group ? (
+                      <span className="badge bg-red-50 text-red-700 ring-red-200">{p.blood_group}</span>
                     ) : '—'}
                   </td>
                   <td className="px-4 py-3 text-slate-600">
@@ -138,10 +138,9 @@ export default function PatientsPage() {
                     <p className="text-xs text-slate-400">{p.email ?? ''}</p>
                   </td>
                   <td className="px-4 py-3 text-slate-600">
-                    <p>{p.emergency_contact_name ?? '—'}</p>
-                    <p className="text-xs text-slate-400">{p.emergency_contact_phone ?? ''}</p>
+                    <p>{p.emergency_contact ?? '—'}</p>
                   </td>
-                  <td className="px-4 py-3 text-slate-500 text-xs">{formatDate(p.created_at)}</td>
+                  <td className="px-4 py-3 text-slate-500 text-xs">{formatDate(p.registration_date)}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
                       <Link href={`/patients/${p.patient_id}`}
