@@ -52,6 +52,12 @@ export default function RoomsPage() {
     }
   }, [editRoom, roomModal]);
 
+  useEffect(() => {
+    if (!admitModal) {
+      setAdmitForm({ patient_id: 0, room_id: 0, doctor_id: 0, admission_date: new Date().toISOString().split('T')[0], diagnosis: '' });
+    }
+  }, [admitModal]);
+
   const saveRoom = async () => {
     setSaving(true);
     try {
@@ -158,7 +164,7 @@ export default function RoomsPage() {
                 <div><p className="text-slate-400">Occupied</p><p className="font-semibold text-slate-700 mt-0.5">{r.current_occupancy}</p></div>
                 <div><p className="text-slate-400">Daily Rate</p><p className="font-semibold text-slate-700 mt-0.5">{formatCurrency(r.charge_per_day)}</p></div>
               </div>
-              {r.is_available && (
+              {r.current_occupancy < r.capacity && (
                 <button className="btn-primary w-full mt-3 text-xs justify-center py-1.5"
                   onClick={() => { setAdmitForm(f => ({ ...f, room_id: r.room_id })); setAdmitModal(true); }}>
                   Admit Patient
@@ -241,7 +247,7 @@ export default function RoomsPage() {
           <Field label="Room" required>
             <select className="input" value={admitForm.room_id} onChange={e => setAdmitForm(f => ({ ...f, room_id: +e.target.value }))}>
               <option value={0}>— Select —</option>
-              {rooms.filter(r => r.is_available).map(r => <option key={r.room_id} value={r.room_id}>{r.room_number} ({r.room_type})</option>)}
+              {rooms.filter(r => r.current_occupancy < r.capacity).map(r => <option key={r.room_id} value={r.room_id}>{r.room_number} ({r.room_type})</option>)}
             </select>
           </Field>
           <Field label="Doctor" required>
